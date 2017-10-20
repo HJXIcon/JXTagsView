@@ -19,7 +19,7 @@ pod 'JXTagsView', '~> 1.0.1'
 
 
 </br>
-// 0.如果应用有导航栏的话，不自动设置相应的内边距
+// 0.如果应用有导航栏的话，需要设置
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     // 1.标签数组
@@ -36,10 +36,9 @@ pod 'JXTagsView', '~> 1.0.1'
     // 3.创建tagsView
     JXTagsView *tagsView = [[JXTagsView alloc]initWithFrame:CGRectZero Tags:tags TagAttribute:attribute UpdateFrame:^(CGFloat currentHeight) {
         dispatch_async(dispatch_get_main_queue(), ^{
-    
-            weakSelf.tagsView.frame = CGRectMake(0, 64, self.view.bounds.size.width, currentHeight);
             
-            NSLog(@"update----- %f",currentHeight);
+            // 更新frame
+            weakSelf.tagsView.frame = CGRectMake(0, 64, self.view.bounds.size.width, currentHeight);
         });
     } completion:^(NSArray<NSNumber *> *selectArray, NSArray<NSString *> *tags) {
         
