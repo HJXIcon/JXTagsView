@@ -18,6 +18,8 @@
 		04A994D61F297FDF00FDF856 /* JXTagsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A994D51F297FDF00FDF856 /* JXTagsView.m */; };
 		04A994D91F29808000FDF856 /* JXTagsAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 04A994D81F29808000FDF856 /* JXTagsAttribute.m */; };
 		04A994DC1F29D2AF00FDF856 /* tags效果图.gif in Resources */ = {isa = PBXBuildFile; fileRef = 04A994DB1F29D2AF00FDF856 /* tags效果图.gif */; };
+		824C8E861F99D45C0004B091 /* tagsFrame.gif in Resources */ = {isa = PBXBuildFile; fileRef = 824C8E851F99D45C0004B091 /* tagsFrame.gif */; };
+		824C8E8A1F99F8F20004B091 /* Snip20171020_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 824C8E891F99F8F20004B091 /* Snip20171020_4.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +42,8 @@
 		04A994D71F29808000FDF856 /* JXTagsAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JXTagsAttribute.h; sourceTree = "<group>"; };
 		04A994D81F29808000FDF856 /* JXTagsAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JXTagsAttribute.m; sourceTree = "<group>"; };
 		04A994DB1F29D2AF00FDF856 /* tags效果图.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tags效果图.gif"; sourceTree = "<group>"; };
+		824C8E851F99D45C0004B091 /* tagsFrame.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = tagsFrame.gif; sourceTree = "<group>"; };
+		824C8E891F99F8F20004B091 /* Snip20171020_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Snip20171020_4.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +117,8 @@
 		04A994DA1F29D12D00FDF856 /* Gif效果图 */ = {
 			isa = PBXGroup;
 			children = (
+				824C8E891F99F8F20004B091 /* Snip20171020_4.png */,
+				824C8E851F99D45C0004B091 /* tagsFrame.gif */,
 				04A994DB1F29D2AF00FDF856 /* tags效果图.gif */,
 			);
 			path = "Gif效果图";
@@ -179,7 +185,9 @@
 				04A994DC1F29D2AF00FDF856 /* tags效果图.gif in Resources */,
 				04A994C61F29792D00FDF856 /* LaunchScreen.storyboard in Resources */,
 				04A994C31F29792D00FDF856 /* Assets.xcassets in Resources */,
+				824C8E861F99D45C0004B091 /* tagsFrame.gif in Resources */,
 				04A994C11F29792D00FDF856 /* Main.storyboard in Resources */,
+				824C8E8A1F99F8F20004B091 /* Snip20171020_4.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +361,7 @@
 				04A994CC1F29792D00FDF856 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

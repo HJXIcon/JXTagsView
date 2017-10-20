@@ -7,6 +7,7 @@
 //
 
 #import "JXTagsCollectionViewCell.h"
+#import "JXTagsAttribute.h"
 
 @implementation JXTagsCollectionViewCell
 
@@ -16,15 +17,22 @@
         self.titleLabel = [[UILabel alloc]init];
         [self.contentView addSubview:self.titleLabel];
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        
     }
     return self;
 }
 
+- (void)setAttribute:(JXTagsAttribute *)attribute{
+    _attribute = attribute;
+    self.contentView.backgroundColor = attribute.normalBackgroundColor;
+    self.titleLabel.font = attribute.titleFont;
+
+}
 
 - (void)layoutSubviews{
     [super layoutSubviews];
     
-    self.titleLabel.frame = self.bounds;
+    self.titleLabel.frame = CGRectMake(_attribute.edgeInsets.left, _attribute.edgeInsets.top, CGRectGetWidth(self.bounds) - _attribute.edgeInsets.left - _attribute.edgeInsets.right, CGRectGetHeight(self.bounds) - _attribute.edgeInsets.top - _attribute.edgeInsets.bottom);
     
 }
 

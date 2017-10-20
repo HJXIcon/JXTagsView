@@ -8,7 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+@class JXTagsAttribute;
 @interface JXTagsCollectionViewCell : UICollectionViewCell
 @property (nonatomic,strong) UILabel *titleLabel;
 
+@property (nonatomic, strong) JXTagsAttribute *attribute;
 @end

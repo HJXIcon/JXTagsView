@@ -10,7 +10,8 @@
 #import "JXTagsCollectionViewFlowLayout.h"
 #import "JXTagsAttribute.h"
 
-typedef void(^JXTagsSelectedCompletion)(NSArray <NSString *>*,NSInteger);
+/// 选中数组，改变之后的标签数组
+typedef void(^JXTagsSelectedCompletion)(NSArray <NSNumber *>*,NSArray <NSString *>*);
 typedef void(^JXTagsFrameUpdateBlock)(CGFloat currentHeight);
 
 
@@ -19,22 +20,25 @@ typedef void(^JXTagsFrameUpdateBlock)(CGFloat currentHeight);
 
 /** 传入的字符数组*/
 @property (nonatomic, strong)NSArray <NSString *>* tagsArray;
-@property (nonatomic,strong) JXTagsCollectionViewFlowLayout *layout;//布局layout
-
 /*！标签样式 */
 @property (nonatomic,strong) JXTagsAttribute *tagAttribute;
+/**
+ 默认垂直方向
+ */
+@property (nonatomic, assign) UICollectionViewScrollDirection scrollDirection;
 
 @property (nonatomic,assign) BOOL isMultiSelect;//是否可以多选 默认:NO 单选
 
 // ======= >>>>>>>> Block
 /**! 更新frameBlock */
-@property(nonatomic, copy) JXTagsFrameUpdateBlock tagsFrameUpdateBlock;
+@property(nonatomic, copy) JXTagsFrameUpdateBlock tagsFrameUpdateBlock; // >>> 只有tags支持拖拽排序并且拖拽之后才会调用
+
 @property (nonatomic,copy) JXTagsSelectedCompletion completion;//选中的标签数组,当前点击的index
 
 
 // ======= >>>>>>>> 排序
 /**
- *  是否需要排序功能
+ *  是否需要排序功能  默认NO
  */
 @property (nonatomic, assign) BOOL isSort;
 /**
@@ -43,29 +47,26 @@ typedef void(^JXTagsFrameUpdateBlock)(CGFloat currentHeight);
 @property (nonatomic, assign) CGFloat scaleTagInSort;
 
 
-
 /**
- 便利构建方法
-
- @param frame frame
- @param updateFrame frame改变回调
- @param completion  选择回调
+ 便利构造方法
+ 
+ @param tags 标签数组
+ @param tagAttribute 标签样式属性 可以传nil 默认样式
+ @param updateFrame 更新frame的Block
+ @param completion 选中回调Block
  */
-- (id)initWithFrame:(CGRect)frame UpdateFrame:(JXTagsFrameUpdateBlock)updateFrame  completion:(JXTagsSelectedCompletion)completion;
+- (instancetype)initWithFrame:(CGRect)frame
+                         Tags:(NSArray <NSString *>*)tags
+                 TagAttribute:(JXTagsAttribute *)tagAttribute
+                  UpdateFrame:(JXTagsFrameUpdateBlock)updateFrame
+                   completion:(JXTagsSelectedCompletion)completion;
 
-//刷新界面
-- (void)reloadData;
 
-
-
+// ======= >>>>>>>> 想让标签全部显示出来，不滚动
 /**
  计算tagsView的高度
-
- @param tagsArray 标签数组
- @param layout 布局  可以传nil 默认布局
- @param tagAttribute 样式属性 可以传nil 默认样式
- @param maxWidth 最大宽度
  */
-+ (CGFloat)getHeightWithTags:(NSArray <NSString *>*)tagsArray layout:(JXTagsCollectionViewFlowLayout *)layout tagAttribute:(JXTagsAttribute *)tagAttribute maxWidth:(CGFloat)maxWidth;
+
+- (CGFloat)getHeightWithMaxWidth:(CGFloat)maxWidth;
 
 @end

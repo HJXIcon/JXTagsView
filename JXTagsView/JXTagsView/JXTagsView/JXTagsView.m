@@ -10,8 +10,6 @@
 #import "JXTagsCollectionViewCell.h"
 #import "JXTagsAttribute.h"
 
-/// 最大宽度
-static CGFloat MaxWidth = 0;
 
 static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
 
@@ -23,14 +21,24 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
 @property (nonatomic,assign)BOOL isChange;
 @property (nonatomic,strong)NSMutableArray *cellAttributesArray;
 
-@property (nonatomic, strong) NSMutableArray <NSString *>*selectedTags;
-
+@property (nonatomic, strong) NSMutableArray <NSNumber *>*selectedTags;
+@property (nonatomic, strong) JXTagsCollectionViewFlowLayout *layout;
+@property (nonatomic, assign) CGFloat collectionViewHeight; // 记录高度
+@property (nonatomic, assign) CGFloat maxWidth; // 记录最大宽度
 @end
 
 @implementation JXTagsView
 
 #pragma mark - lazy load
-- (NSMutableArray<NSString *> *)selectedTags{
+- (JXTagsCollectionViewFlowLayout *)layout{
+    if (_layout == nil) {
+        _layout = [[JXTagsCollectionViewFlowLayout alloc]init];
+        _layout.scrollDirection = _scrollDirection;
+    }
+    return _layout;
+}
+
+- (NSMutableArray<NSNumber *> *)selectedTags{
     if (_selectedTags == nil) {
         _selectedTags = [NSMutableArray array];
     }
@@ -47,16 +55,17 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
 
 - (UICollectionView *)collectionView{
     if (_collectionView == nil) {
-        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:_layout];
+        
+        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:self.layout];
         _collectionView.delegate = self;
         _collectionView.dataSource = self;
-        _collectionView.backgroundColor = [UIColor colorWithRed:241/255.0 green:241/255.0 blue:241/255.0 alpha:1.0];
+        _collectionView.scrollsToTop = NO;
+        _collectionView.backgroundColor = [UIColor clearColor];
         [_collectionView registerClass:[JXTagsCollectionViewCell class] forCellWithReuseIdentifier:reuseIdentifier];
     }
     
-    _collectionView.collectionViewLayout = _layout;
     
-    if (_layout.scrollDirection == UICollectionViewScrollDirectionVertical) {
+    if (_scrollDirection == UICollectionViewScrollDirectionVertical) {
         //垂直
         _collectionView.showsVerticalScrollIndicator = YES;
         _collectionView.showsHorizontalScrollIndicator = NO;
@@ -70,12 +79,19 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
     return _collectionView;
     
 }
-- (id)initWithFrame:(CGRect)frame UpdateFrame:(JXTagsFrameUpdateBlock)updateFrame  completion:(JXTagsSelectedCompletion)completion{
+
+- (instancetype)initWithFrame:(CGRect)frame
+                         Tags:(NSArray <NSString *>*)tags
+                 TagAttribute:(JXTagsAttribute *)tagAttribute
+                  UpdateFrame:(JXTagsFrameUpdateBlock)updateFrame
+                   completion:(JXTagsSelectedCompletion)completion{
     
     if (self = [super initWithFrame:frame]) {
-        [self setup];
+        self.tagsArray = tags;
+        self.tagAttribute = tagAttribute;
         self.tagsFrameUpdateBlock = updateFrame;
         self.completion = completion;
+        [self setup];
     }
     
     return self;
@@ -104,30 +120,31 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
 - (void)setup
 {
     //初始化样式
-    _tagAttribute = [[JXTagsAttribute alloc]init];
-    
-    _layout = [[JXTagsCollectionViewFlowLayout alloc] init];
-    
+    if(_tagAttribute == nil) _tagAttribute = [[JXTagsAttribute alloc]init];
     _scaleTagInSort = 1.2;
     
     /// ====>>> iOS9方法
 //    _longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(lonePressMoving:)];
 //    [self.collectionView addGestureRecognizer:_longPress];
     [self addSubview:self.collectionView];
+   
 }
+
 
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
+    NSLog(@"layoutsubViews ---- ");
     self.collectionView.frame = self.bounds;
+    
+    
     
 }
 
 #pragma mark - setter
 - (void)setScaleTagInSort:(CGFloat)scaleTagInSort
 {
-    if (_scaleTagInSort < 1) {
+    if (_scaleTagInSort <= 1) {
         @throw [NSException exceptionWithName:@"JXTagsError" reason:@"(scaleTagInSort)缩放比例必须大于1" userInfo:nil];
     }
     _scaleTagInSort = scaleTagInSort;
@@ -154,6 +171,7 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
     
     switch (longPress.state) {
         case UIGestureRecognizerStateBegan: {
+            _collectionViewHeight = CGRectGetHeight(self.collectionView.frame);
             [self.cellAttributesArray removeAllObjects];
             for (int i = 0; i < self.tagsArray.count; i++) {
                 
@@ -173,8 +191,8 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
                 if (CGRectContainsPoint(attributes.frame, cell.center) && cellIndexpath != attributes.indexPath) {
                     _isChange = YES;
                     NSString *tagString = self.tagsArray[cellIndexpath.row];
+                    /// 改变数据源
                     NSMutableArray *tmpArray = [[NSMutableArray alloc]initWithArray:self.tagsArray];
-                    
                     [tmpArray removeObjectAtIndex:cellIndexpath.row];
                     [tmpArray insertObject:tagString atIndex:attributes.indexPath.row];
                     
@@ -182,10 +200,11 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
                     
                     [self.collectionView moveItemAtIndexPath:cellIndexpath toIndexPath:attributes.indexPath];
                     
-                    
                     /// 更新Frame
-                    if (self.tagsFrameUpdateBlock) {
-                        self.tagsFrameUpdateBlock([JXTagsView getHeightWithTags:self.tagsArray layout:_layout tagAttribute:_tagAttribute maxWidth:MaxWidth]);
+                    CGFloat height = [self getHeightWithMaxWidth:_maxWidth];
+                    if (self.tagsFrameUpdateBlock && _collectionViewHeight != height) {
+                        self.tagsFrameUpdateBlock(height);
+                        _collectionViewHeight = height;
                     }
                 }
             }
@@ -202,6 +221,7 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
                     cell.transform = CGAffineTransformIdentity;
                 }];
             }
+            
         }
             
             break;
@@ -290,22 +310,19 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     JXTagsCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    cell.backgroundColor = _tagAttribute.normalBackgroundColor;
+    cell.attribute = _tagAttribute;
     cell.layer.borderColor = _tagAttribute.borderColor.CGColor;
-    cell.layer.cornerRadius = _tagAttribute.cornerRadius;
+    cell.layer.cornerRadius = _tagAttribute.isShowCorner ? self.layout.itemSize.height * 0.5 : _tagAttribute.cornerRadius;
+    cell.layer.masksToBounds = YES;
     cell.layer.borderWidth = _tagAttribute.borderWidth;
     cell.titleLabel.textColor = _tagAttribute.normalTextColor;
-    cell.titleLabel.font = [UIFont systemFontOfSize:_tagAttribute.titleSize];
-    cell.titleLabel.text = self.tagsArray[indexPath.row];
-    
     
     NSString *title = self.tagsArray[indexPath.item];
-    
     cell.titleLabel.text = title;
     
     
-    if ([self.selectedTags containsObject:self.tagsArray[indexPath.item]]) {
-        cell.backgroundColor = _tagAttribute.selectedBackgroundColor;
+    if ([self.selectedTags containsObject:@(indexPath.item)]) {
+        cell.contentView.backgroundColor = _tagAttribute.selectedBackgroundColor;
     }
     
     
@@ -317,34 +334,34 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
         
     }
     
-    
     return cell;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    
     JXTagsCollectionViewCell *cell = (JXTagsCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
     
-    if ([self.selectedTags containsObject:self.tagsArray[indexPath.item]]) {
-        cell.backgroundColor = _tagAttribute.normalBackgroundColor;
-        [self.selectedTags removeObject:self.tagsArray[indexPath.item]];
+    if (_isMultiSelect && [self.selectedTags containsObject:@(indexPath.item)]) {
+        cell.contentView.backgroundColor = _tagAttribute.normalBackgroundColor;
+        [self.selectedTags removeObject:@(indexPath.item)];
     }
     
     else {
         if (_isMultiSelect) {
-            cell.backgroundColor = _tagAttribute.selectedBackgroundColor;
-            [self.selectedTags addObject:self.tagsArray[indexPath.item]];
+            cell.contentView.backgroundColor = _tagAttribute.selectedBackgroundColor;
+            [self.selectedTags addObject:@(indexPath.item)];
             
         } else {
             [self.selectedTags removeAllObjects];
-            [self.selectedTags addObject:self.tagsArray[indexPath.item]];
+            [self.selectedTags addObject:@(indexPath.item)];
             
             [self reloadData];
         }
     }
     
     if (self.completion) {
-        self.completion(self.selectedTags,indexPath.item);
+        self.completion(self.selectedTags,self.tagsArray);
     }
     
 }
@@ -355,77 +372,76 @@ static NSString * const reuseIdentifier = @"JXTagsCollectionViewCellId";
     JXTagsCollectionViewFlowLayout *layout = (JXTagsCollectionViewFlowLayout *)collectionView.collectionViewLayout;
     CGSize maxSize = CGSizeMake(collectionView.frame.size.width - layout.sectionInset.left - layout.sectionInset.right, layout.itemSize.height);
     
-    CGRect frame = [_tagsArray[indexPath.item] boundingRectWithSize:maxSize options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:_tagAttribute.titleSize]} context:nil];
+    CGRect frame = [_tagsArray[indexPath.item] boundingRectWithSize:maxSize options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: _tagAttribute.titleFont} context:nil];
     
-    return CGSizeMake(frame.size.width + _tagAttribute.tagPadding * 2, layout.itemSize.height);
+    CGFloat horizontalMargin = _tagAttribute.edgeInsets.right + _tagAttribute.edgeInsets.left;
+    CGFloat verticalMargin = _tagAttribute.edgeInsets.top + _tagAttribute.edgeInsets.bottom;
+    
+    CGSize size = CGSizeMake(frame.size.width + horizontalMargin, ceilf(frame.size.height) + verticalMargin);
+    
+    return size;
 }
 
 
-
-#pragma mark - public Method
+// 刷新数据
 - (void)reloadData{
     [self.collectionView reloadData];
-    
 }
+
 
 /**
  计算tagsView的高度
- 
- @param tagsArray 标签数组
- @param layout 布局
- @param tagAttribute 样式属性
- @param maxWidth 最大宽度
  */
-+ (CGFloat)getHeightWithTags:(NSArray <NSString *>*)tagsArray layout:(JXTagsCollectionViewFlowLayout *)layout tagAttribute:(JXTagsAttribute *)tagAttribute maxWidth:(CGFloat)maxWidth{
+- (CGFloat)getHeightWithMaxWidth:(CGFloat)maxWidth{
+    NSAssert(maxWidth > 0, @"'maxWidth'不能小于0");
     
-    MaxWidth = maxWidth;
+    _maxWidth = maxWidth;
     
     CGFloat contentHeight;
     
-    if (!layout) {
-        layout = [[JXTagsCollectionViewFlowLayout alloc] init];
+    if (self.tagsArray.count == 0) {
+        @throw [NSException exceptionWithName:@"JXTagsError" reason:@"请先设置'tagsArray'，才能计算高度" userInfo:nil];
     }
     
-    if (tagAttribute.titleSize <= 0) {
-        tagAttribute = [[JXTagsAttribute alloc] init];
+    if (self.tagAttribute == nil) {
+        @throw [NSException exceptionWithName:@"JXTagsError" reason:@"请先设置'tagAttribute'属性，才能计算高度" userInfo:nil];
     }
     
-    if (maxWidth == 0) {
-        @throw [NSException exceptionWithName:@"JXTagsError" reason:@"设置标签的最大宽度" userInfo:nil];
-    }
     
     
     //cell的高度 = 顶部 + 高度
-    contentHeight = layout.sectionInset.top + layout.itemSize.height;
+    contentHeight = self.layout.sectionInset.top + self.layout.itemSize.height;
     
-    CGFloat originX = layout.sectionInset.left;
-    CGFloat originY = layout.sectionInset.top;
+    CGFloat originX = self.layout.sectionInset.left;
+    CGFloat originY = self.layout.sectionInset.top;
     
-    NSInteger itemCount = tagsArray.count;
+    NSInteger itemCount = self.tagsArray.count;
     
     for (NSInteger i = 0; i < itemCount; i++) {
-        CGSize maxSize = CGSizeMake(maxWidth - layout.sectionInset.left - layout.sectionInset.right, layout.itemSize.height);
+        CGSize maxSize = CGSizeMake(maxWidth - self.layout.sectionInset.left - self.layout.sectionInset.right, self.layout.itemSize.height);
+        //// >>>> 注意!!!!!
+        // 由于计算出来的值比实际需要的值略小，故需要对其向上取整，这样子获取的高度才是我们所需要的。
+        CGRect frame = [self.tagsArray[i] boundingRectWithSize:maxSize options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: self.tagAttribute.titleFont} context:nil];
         
-        CGRect frame = [tagsArray[i] boundingRectWithSize:maxSize options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:tagAttribute.titleSize]} context:nil];
+        CGFloat horizontalMargin = _tagAttribute.edgeInsets.right + _tagAttribute.edgeInsets.left;
+        CGFloat verticalMargin = _tagAttribute.edgeInsets.top + _tagAttribute.edgeInsets.bottom;
+        CGSize itemSize = CGSizeMake(frame.size.width + horizontalMargin, ceilf(frame.size.height) + verticalMargin);
         
-        CGSize itemSize = CGSizeMake(frame.size.width + tagAttribute.tagPadding * 2, layout.itemSize.height);
-        
-        if (layout.scrollDirection == UICollectionViewScrollDirectionVertical) {
+        if (self.layout.scrollDirection == UICollectionViewScrollDirectionVertical) {
             //垂直滚动
             //当前CollectionViewCell的起点 + 当前CollectionViewCell的宽度 + 当前CollectionView距离右侧的间隔 > collectionView的宽度
-            if ((originX + itemSize.width + layout.sectionInset.right) > maxWidth) {
-                originX = layout.sectionInset.left;
-                originY += itemSize.height + layout.minimumLineSpacing;
+            if ((originX + itemSize.width + self.layout.sectionInset.right) > maxWidth) {
+                originX = self.layout.sectionInset.left;
+                originY += itemSize.height + self.layout.minimumLineSpacing;
                 
-                contentHeight += itemSize.height + layout.minimumLineSpacing;
+                contentHeight += itemSize.height + self.layout.minimumLineSpacing;
             }
         }
         
-        originX += itemSize.width + layout.minimumInteritemSpacing;
+        originX += itemSize.width + self.layout.minimumInteritemSpacing;
     }
     
-    contentHeight += layout.sectionInset.bottom;
-    
+    contentHeight += self.layout.sectionInset.bottom;
     
     
     return contentHeight;
