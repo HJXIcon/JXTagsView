@@ -10,7 +10,7 @@
 ![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/tagsFrame.gif)
 
 #### 设置内边距
-![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/Snip20171020_4.png=320x568)
+<img src="https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/Snip20171020_4.png" width = "300" height = "200" alt="设置内边距" align=center />
 </br>
 
 ##### 使用步骤
