@@ -36,7 +36,7 @@ pod 'JXTagsView', '~> 1.0.1'
     // 3.创建tagsView
     JXTagsView *tagsView = [[JXTagsView alloc]initWithFrame:CGRectZero Tags:tags TagAttribute:attribute UpdateFrame:^(CGFloat currentHeight) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            // 更新frame
+    
             weakSelf.tagsView.frame = CGRectMake(0, 64, self.view.bounds.size.width, currentHeight);
             
             NSLog(@"update----- %f",currentHeight);
