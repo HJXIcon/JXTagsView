@@ -10,16 +10,15 @@
 ![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/tagsFrame.gif)
 
 #### 设置内边距
-![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/Snip20171020_4.png)
+![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/Snip20171020_4.png=320x568)
 </br>
 
 ##### 使用步骤
 pod search JXTagsView --simple
+
 pod 'JXTagsView', '~> 1.0.1'
 
-
-</br>
-// 0.如果应用有导航栏的话，需要设置
+    // 0.如果应用有导航栏的话，需要设置
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     // 1.标签数组
