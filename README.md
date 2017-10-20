@@ -8,6 +8,8 @@
 </br>
 #### 高度自适应
 ![image](https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/tagsFrame.gif)
+<img src="https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/tagsFrame.gif" width = "320" height = "568" alt="高度自适应" align=center />
+</br>
 
 #### 设置内边距
 <img src="https://github.com/HJXIcon/JXTagsView/blob/master/JXTagsView/JXTagsView/Gif%E6%95%88%E6%9E%9C%E5%9B%BE/Snip20171020_4.png" width = "320" height = "568" alt="设置内边距" align=center />
